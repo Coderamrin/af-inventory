@@ -1,40 +1,41 @@
-datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model Seller {
-  id          Int                 @id @default(autoincrement())
-  name        String
-  assignments ProductAssignment[]
-  payments    Payment[]
+  id           Int                  @id @default(autoincrement())
+  name         String
+  phone        String
+  assignments  ProductAssignment[]  // Products assigned to this seller
+  payments     Payment[]            // Payments made by this seller
 }
 
 model Product {
-  id          Int                 @id @default(autoincrement())
-  name        String
-  price       Float
-  totalStock  Int?
-  assignments ProductAssignment[]
+  id           Int                  @id @default(autoincrement())
+  name         String
+  price        Float
+  totalStock   Int
+  assignments  ProductAssignment[]  // Which seller got how much
 }
 
 model ProductAssignment {
-  id        Int     @id @default(autoincrement())
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId Int
-  seller    Seller  @relation(fields: [sellerId], references: [id])
-  sellerId  Int
-  quantity  Int
+  id         Int      @id @default(autoincrement())
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+  seller     Seller   @relation(fields: [sellerId], references: [id])
+  sellerId   Int
+  quantity   Int
 }
 
 model Payment {
-  id        Int      @id @default(autoincrement())
-  seller    Seller   @relation(fields: [sellerId], references: [id])
-  sellerId  Int
-  amount    Float
-  timestamp DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  seller     Seller   @relation(fields: [sellerId], references: [id])
+  sellerId   Int
+  amount     Float
+  timestamp  DateTime @default(now())
 }
