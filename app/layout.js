@@ -1,12 +1,20 @@
-import "./globals.css";
-import Link from "next/link";
+'use client';
 
-export const metadata = {
-  title: "Inventory Dashboard",
-  description: "Admin dashboard for inventory system",
-};
+import './globals.css';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
 
 export default function RootLayout({ children }) {
+  const pathname = usePathname();
+
+  const navItems = [
+    { href: '/', label: '🏠 Dashboard' },
+    { href: '/products', label: '📦 Products' },
+    { href: '/sellers', label: '🧑‍💼 Sellers' },
+    { href: '/assignments', label: '📊 Assignments' },
+  ];
+
   return (
     <html lang="en">
       <body className="flex min-h-screen bg-gray-100">
@@ -14,18 +22,17 @@ export default function RootLayout({ children }) {
         <aside className="w-60 bg-white shadow-md p-6 flex flex-col">
           <h1 className="text-2xl font-bold mb-8">Inventory Dashboard</h1>
           <nav className="flex flex-col space-y-4 text-gray-700 font-medium">
-            <Link href="/" className="hover:text-blue-600">
-              🏠 Dashboard
-            </Link>
-            <Link href="/products" className="hover:text-blue-600">
-              📦 Products
-            </Link>
-            <Link href="/sellers" className="hover:text-blue-600">
-              🧑‍💼 Sellers
-            </Link>
-            <Link href="/assignments" className="hover:text-blue-600">
-              📊 Assignments
-            </Link>
+            {navItems.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`hover:text-blue-600 transition ${
+                  pathname === href ? 'text-blue-600 font-semibold' : ''
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
           </nav>
         </aside>
 

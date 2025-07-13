@@ -7,28 +7,28 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Product {
-  id          Int                  @id @default(autoincrement())
-  name        String
-  price       Float
-  totalStock  Int
-  assignments ProductAssignment[]
-}
-
 model Seller {
-  id          Int                  @id @default(autoincrement())
+  id          Int                 @id @default(autoincrement())
   name        String
   assignments ProductAssignment[]
   payments    Payment[]
 }
 
+model Product {
+  id          Int                 @id @default(autoincrement())
+  name        String
+  price       Float
+  totalStock  Int?
+  assignments ProductAssignment[]
+}
+
 model ProductAssignment {
-  id         Int      @id @default(autoincrement())
-  product    Product  @relation(fields: [productId], references: [id])
-  productId  Int
-  seller     Seller   @relation(fields: [sellerId], references: [id])
-  sellerId   Int
-  quantity   Int
+  id        Int     @id @default(autoincrement())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  seller    Seller  @relation(fields: [sellerId], references: [id])
+  sellerId  Int
+  quantity  Int
 }
 
 model Payment {
@@ -36,5 +36,5 @@ model Payment {
   seller    Seller   @relation(fields: [sellerId], references: [id])
   sellerId  Int
   amount    Float
-  paidAt    DateTime @default(now())
+  timestamp DateTime @default(now())
 }
