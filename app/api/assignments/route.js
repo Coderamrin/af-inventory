@@ -17,34 +17,53 @@ export async function POST(request) {
   if (!productId || !sellerId || !quantity) {
     return new Response(JSON.stringify({ error: "Missing fields" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
     });
   }
 
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+  });
+
+  if (!product || product.totalStock < quantity) {
+    return new Response(JSON.stringify({ error: "Not enough stock" }), {
+      status: 400,
+    });
+  }
+
+  // Check if assignment exists
   const existing = await prisma.productAssignment.findFirst({
     where: { productId, sellerId },
   });
 
+  let updatedAssignment;
+
   if (existing) {
-    const updated = await prisma.productAssignment.update({
+    updatedAssignment = await prisma.productAssignment.update({
       where: { id: existing.id },
       data: { quantity: existing.quantity + Number(quantity) },
     });
-    return new Response(JSON.stringify(updated), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
   } else {
-    const assignment = await prisma.productAssignment.create({
+    updatedAssignment = await prisma.productAssignment.create({
       data: {
         productId,
         sellerId,
         quantity: Number(quantity),
       },
     });
-    return new Response(JSON.stringify(assignment), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
   }
+
+  // Subtract quantity from total stock
+  await prisma.product.update({
+    where: { id: productId },
+    data: {
+      totalStock: {
+        decrement: Number(quantity),
+      },
+    },
+  });
+
+  return new Response(JSON.stringify(updatedAssignment), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }

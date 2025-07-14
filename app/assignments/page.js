@@ -11,6 +11,9 @@ export default function Assignments() {
   const [selectedSeller, setSelectedSeller] = useState("");
   const [quantity, setQuantity] = useState("");
 
+  const [editId, setEditId] = useState(null);
+  const [editQuantity, setEditQuantity] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -49,11 +52,7 @@ export default function Assignments() {
     }
 
     const product = products.find((p) => p.id === parseInt(selectedProduct));
-    if (!product) {
-      alert("Invalid product selected");
-      return;
-    }
-    if (quantity > product.totalStock) {
+    if (!product || parseInt(quantity) > product.totalStock) {
       alert("স্টক এর বেশি পরিমাণ নির্ধারণ করা যায় না");
       return;
     }
@@ -75,6 +74,36 @@ export default function Assignments() {
       fetchAll();
     } else {
       alert("অ্যাসাইনমেন্ট ব্যর্থ হয়েছে");
+    }
+  }
+
+  async function handleDelete(id) {
+    if (!confirm("Are you sure you want to delete this assignment?")) return;
+
+    const res = await fetch(`/api/assignments/${id}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      fetchAll();
+    } else {
+      alert("Failed to delete assignment");
+    }
+  }
+
+  async function handleUpdate(id) {
+    const res = await fetch(`/api/assignments/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newQuantity: parseInt(editQuantity) }),
+    });
+
+    if (res.ok) {
+      setEditId(null);
+      setEditQuantity("");
+      fetchAll();
+    } else {
+      alert("Failed to update quantity");
     }
   }
 
@@ -141,6 +170,7 @@ export default function Assignments() {
             <th className="p-3 text-left">Product</th>
             <th className="p-3 text-left">Seller</th>
             <th className="p-3 text-left">Quantity</th>
+            <th className="p-3 text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -148,7 +178,58 @@ export default function Assignments() {
             <tr key={a.id} className="border-b hover:bg-gray-50">
               <td className="p-3">{a.product.name}</td>
               <td className="p-3">{a.seller.name}</td>
-              <td className="p-3">{a.quantity}</td>
+              <td className="p-3">
+                {editId === a.id ? (
+                  <input
+                    type="number"
+                    value={editQuantity}
+                    onChange={(e) => setEditQuantity(e.target.value)}
+                    className="border p-1 rounded w-20"
+                    min={1}
+                  />
+                ) : (
+                  a.quantity
+                )}
+              </td>
+              <td className="p-3 space-x-2">
+                {editId === a.id ? (
+                  <>
+                    <button
+                      onClick={() => handleUpdate(a.id)}
+                      className="px-2 py-1 bg-green-600 text-white rounded text-sm"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditId(null);
+                        setEditQuantity("");
+                      }}
+                      className="px-2 py-1 border rounded text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setEditId(a.id);
+                        setEditQuantity(a.quantity);
+                      }}
+                      className="px-2 py-1 bg-yellow-500 text-white rounded text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(a.id)}
+                      className="px-2 py-1 bg-red-600 text-white rounded text-sm"
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
