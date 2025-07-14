@@ -8,6 +8,7 @@ export default function Sellers() {
   const [error, setError] = useState(null);
 
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedSeller, setSelectedSeller] = useState(null);
@@ -36,10 +37,11 @@ export default function Sellers() {
       alert("Please enter a seller name");
       return;
     }
+
     const res = await fetch("/api/sellers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, phone }),
     });
 
     if (res.ok) {
@@ -100,6 +102,13 @@ export default function Sellers() {
             onChange={(e) => setName(e.target.value)}
             className="w-full border p-2 rounded"
           />
+          <input
+            type="text"
+            placeholder="Seller Phone Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full border p-2 rounded"
+          />
           <div className="flex gap-4">
             <button
               type="submit"
@@ -122,6 +131,7 @@ export default function Sellers() {
         <thead className="bg-gray-100">
           <tr>
             <th className="p-3 text-left">Name</th>
+            <th className="p-3 text-left">Number</th>
             <th className="p-3 text-left">Total Assigned (৳)</th>
             <th className="p-3 text-left">Total Paid (৳)</th>
             <th className="p-3 text-left">Balance (৳)</th>
@@ -142,6 +152,7 @@ export default function Sellers() {
                 className="border-b hover:bg-gray-50 align-top"
               >
                 <td className="p-3 align-top font-semibold">{seller.name}</td>
+                <td className="p-3 align-top font-semibold">{seller.phone}</td>
                 <td className="p-3 align-top">{totalAssigned.toFixed(2)}</td>
                 <td className="p-3 align-top">{totalPaid.toFixed(2)}</td>
                 <td

@@ -11,13 +11,13 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const { name } = await request.json();
-  if (!name) {
+  const { name, phone } = await request.json();
+  if (!name || !phone) {
     return new Response(JSON.stringify({ error: "Missing name" }), {
       status: 400,
     });
   }
-  const seller = await prisma.seller.create({ data: { name } });
+  const seller = await prisma.seller.create({ data: { name, phone } });
   return new Response(JSON.stringify(seller), {
     status: 201,
     headers: { "Content-Type": "application/json" },
