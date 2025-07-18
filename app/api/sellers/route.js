@@ -11,15 +11,42 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const { name, phone } = await request.json();
-  if (!name || !phone) {
-    return new Response(JSON.stringify({ error: "Missing name" }), {
+  const { name, phone, email, password } = await request.json();
+
+  if (!name || !phone || !email || !password) {
+    return new Response(JSON.stringify({ error: "Missing required fields" }), {
       status: 400,
     });
   }
-  const seller = await prisma.seller.create({ data: { name, phone } });
-  return new Response(JSON.stringify(seller), {
-    status: 201,
-    headers: { "Content-Type": "application/json" },
-  });
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        role: "SELLER",
+        seller: {
+          create: {
+            name,
+            phone,
+          },
+        },
+      },
+      include: {
+        seller: true,
+      },
+    });
+
+    return new Response(JSON.stringify(user), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    console.error("Failed to create user and seller:", err);
+    return new Response(JSON.stringify({ error: "User creation failed" }), {
+      status: 500,
+    });
+  }
 }

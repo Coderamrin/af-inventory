@@ -7,13 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Seller {
-  id           Int                  @id @default(autoincrement())
-  name         String
-  phone        String
-  assignments  ProductAssignment[]  // Products assigned to this seller
-  payments     Payment[]            // Payments made by this seller
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(SELLER)
+  sellerId  Int?     @unique     // Make it unique for 1:1 relation
+  seller    Seller?  @relation(fields: [sellerId], references: [id])
+  createdAt DateTime @default(now())
 }
+
+model Seller {
+  id          Int      @id @default(autoincrement())
+  name        String
+  phone       String
+  assignments ProductAssignment[]
+  payments    Payment[]
+  user        User?    // 1:1 reverse relation
+}
+
+enum Role {
+  ADMIN
+  SELLER
+}
+
 
 model Product {
   id           Int                  @id @default(autoincrement())
