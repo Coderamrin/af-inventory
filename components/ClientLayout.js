@@ -14,7 +14,7 @@ export default function ClientLayout({ children }) {
 
   return (
     <SessionProvider>
-      <div className="flex min-h-screen bg-gray-100">
+      <div className="flex h-screen bg-gray-100">
         {status === "authenticated" && (
           <>
             {role === "ADMIN" && <AdminSidebar pathname={pathname} />}

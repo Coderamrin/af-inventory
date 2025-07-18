@@ -17,9 +17,18 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Missing credentials");
+        }
+
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
-          include: { seller: true }, // Optional
+          include: {
+            assignments: {
+              include: { product: true },
+            },
+            payments: true,
+          },
         });
 
         if (!user) throw new Error("No user found");
@@ -30,9 +39,12 @@ const handler = NextAuth({
         );
         if (!isValid) throw new Error("Invalid credentials");
 
+        // Return the user object you want available in session
         return {
           id: user.id,
           email: user.email,
+          name: user.name,
+          phone: user.phone,
           role: user.role,
         };
       },
@@ -43,6 +55,9 @@ const handler = NextAuth({
       if (user) {
         token.role = user.role;
         token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.phone = user.phone;
       }
       return token;
     },
@@ -50,12 +65,15 @@ const handler = NextAuth({
       if (token) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.phone = token.phone;
       }
       return session;
     },
   },
   pages: {
-    signIn: "/login", // optional: custom login page
+    signIn: "/login", // custom login page path
   },
   secret: process.env.NEXTAUTH_SECRET,
 });

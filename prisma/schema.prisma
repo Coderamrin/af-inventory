@@ -13,18 +13,10 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(SELLER)
-  sellerId  Int?     @unique     // Make it unique for 1:1 relation
-  seller    Seller?  @relation(fields: [sellerId], references: [id])
-  createdAt DateTime @default(now())
-}
-
-model Seller {
-  id          Int      @id @default(autoincrement())
-  name        String
-  phone       String
+  phone     String?  // Moved from Seller
   assignments ProductAssignment[]
   payments    Payment[]
-  user        User?    // 1:1 reverse relation
+  createdAt DateTime @default(now())
 }
 
 enum Role {
@@ -32,28 +24,27 @@ enum Role {
   SELLER
 }
 
-
 model Product {
   id           Int                  @id @default(autoincrement())
   name         String
   price        Float
   totalStock   Int
-  assignments  ProductAssignment[]  // Which seller got how much
+  assignments  ProductAssignment[]
 }
 
 model ProductAssignment {
   id         Int      @id @default(autoincrement())
   product    Product  @relation(fields: [productId], references: [id])
   productId  Int
-  seller     Seller   @relation(fields: [sellerId], references: [id])
-  sellerId   Int
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
   quantity   Int
 }
 
 model Payment {
   id         Int      @id @default(autoincrement())
-  seller     Seller   @relation(fields: [sellerId], references: [id])
-  sellerId   Int
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
   amount     Float
   timestamp  DateTime @default(now())
 }

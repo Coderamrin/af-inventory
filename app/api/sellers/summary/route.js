@@ -1,20 +1,19 @@
-// app/api/sellers/summary/route.js (or .ts)
 import prisma from "@/utils/prismaDB";
 
 export async function GET() {
   try {
-    const sellers = await prisma.seller.findMany({
+    const sellers = await prisma.user.findMany({
+      where: { role: "SELLER" },
       include: {
         assignments: {
           include: {
-            product: true, // To get product.name etc
+            product: true,
           },
         },
-        payments: true, // To get payment history
+        payments: true,
       },
     });
 
-    // Also, for each seller, calculate totalAssignedValue and totalPaid
     const sellersWithTotals = sellers.map((seller) => {
       const totalAssignedValue = seller.assignments.reduce(
         (sum, a) => sum + a.quantity * a.product.price,
@@ -23,7 +22,9 @@ export async function GET() {
       const totalPaid = seller.payments.reduce((sum, p) => sum + p.amount, 0);
 
       return {
-        ...seller,
+        id: seller.id,
+        name: seller.name,
+        email: seller.email,
         totalAssignedValue,
         totalPaid,
       };
@@ -33,6 +34,8 @@ export async function GET() {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+    });
   }
 }

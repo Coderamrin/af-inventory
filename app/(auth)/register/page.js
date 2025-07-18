@@ -24,6 +24,8 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
+    console.log(form);
+
     const res = await fetch("/api/auth/register", {
       method: "POST",
       body: JSON.stringify(form),
@@ -61,6 +63,16 @@ export default function RegisterPage() {
           className="w-full px-4 py-2 border rounded-md"
         />
 
+        {/* <input
+          type="text"
+          name="phone"
+          placeholder="Phone"
+          value={form.phone}
+          onChange={handleChange}
+          required
+          className="w-full px-4 py-2 border rounded-md"
+        /> */}
+
         <input
           type="email"
           name="email"
@@ -80,16 +92,6 @@ export default function RegisterPage() {
           required
           className="w-full px-4 py-2 border rounded-md"
         />
-
-        {/* <select
-          name="role"
-          value={form.role}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-md"
-        >
-          <option value="seller">Seller</option>
-          <option value="admin">Admin</option>
-        </select> */}
 
         <button
           type="submit"

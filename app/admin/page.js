@@ -37,7 +37,16 @@ export default function Dashboard() {
         0
       );
 
-      // Pie chart: total quantity assigned per product
+      const totalPaidMoney = sellers.reduce(
+        (acc, s) => acc + (s.totalPaid || 0),
+        0
+      );
+
+      const totalOwedMoney = sellers.reduce((acc, s) => {
+        const owed = (s.totalAssignedValue || 0) - (s.totalPaid || 0);
+        return acc + (owed > 0 ? owed : 0);
+      }, 0);
+
       const productQuantityMap = {};
       assignments.forEach((a) => {
         const product = products.find((p) => p.id === a.productId);
@@ -50,7 +59,6 @@ export default function Dashboard() {
         ([name, value]) => ({ name, value })
       );
 
-      // Bar chart: seller balances
       const sellerChart = sellers.map((s) => ({
         name: s.name,
         Paid: s.totalPaid || 0,
@@ -59,7 +67,13 @@ export default function Dashboard() {
 
       setProductData(productChart);
       setSellerData(sellerChart);
-      setStats({ totalProducts, totalSellers, totalAssigned });
+      setStats({
+        totalProducts,
+        totalSellers,
+        totalAssigned,
+        totalPaidMoney,
+        totalOwedMoney,
+      });
     }
 
     fetchStats();
@@ -79,7 +93,7 @@ export default function Dashboard() {
       <h2 className="text-3xl font-bold mb-2 text-gray-800">📊 Dashboard</h2>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div className="bg-indigo-100 p-5 rounded-xl shadow">
           <h3 className="text-lg font-semibold">Total Products</h3>
           <p className="text-3xl font-bold">{stats.totalProducts}</p>
@@ -91,6 +105,14 @@ export default function Dashboard() {
         <div className="bg-amber-100 p-5 rounded-xl shadow">
           <h3 className="text-lg font-semibold">Total Assigned</h3>
           <p className="text-3xl font-bold">{stats.totalAssigned}</p>
+        </div>
+        <div className="bg-green-100 p-5 rounded-xl shadow">
+          <h3 className="text-lg font-semibold">Total Paid</h3>
+          <p className="text-3xl font-bold">৳{stats.totalPaidMoney.toFixed(2)}</p>
+        </div>
+        <div className="bg-red-100 p-5 rounded-xl shadow">
+          <h3 className="text-lg font-semibold">Total Owed</h3>
+          <p className="text-3xl font-bold">৳{stats.totalOwedMoney.toFixed(2)}</p>
         </div>
       </div>
 

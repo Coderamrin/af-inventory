@@ -1,142 +1,163 @@
+// // components/ProductAssigner.tsx
+// "use client";
+
+// import { useState, useEffect } from "react";
+
+// export default function ProductAssigner() {
+//   const [sellers, setSellers] = useState([]);
+//   const [products, setProducts] = useState([]);
+//   const [selectedSeller, setSelectedSeller] = useState("");
+//   const [selectedProduct, setSelectedProduct] = useState("");
+//   const [quantity, setQuantity] = useState(1);
+//   const [message, setMessage] = useState("");
+
+//   useEffect(() => {
+//     fetch("/api/users?sellerOnly=true")
+//       .then((res) => res.json())
+//       .then(setSellers);
+//     fetch("/api/products")
+//       .then((res) => res.json())
+//       .then(setProducts);
+//   }, []);
+
+//   const assignProduct = async () => {
+//     const res = await fetch("/api/assignments", {
+//       method: "POST",
+//       body: JSON.stringify({
+//         userId: selectedSeller,
+//         productId: selectedProduct,
+//         quantity: Number(quantity),
+//       }),
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//     });
+
+//     if (res.ok) {
+//       setMessage("✅ Product assigned!");
+//     } else {
+//       const data = await res.json();
+//       setMessage("❌ Failed: " + data.error);
+//     }
+//   };
+
+//   return (
+//     <div className="p-4 max-w-md mx-auto bg-white rounded shadow">
+//       <h2 className="text-xl font-semibold mb-4">Assign Product to Seller</h2>
+//       <label>Seller:</label>
+//       <select
+//         className="w-full p-2 border mb-2"
+//         value={selectedSeller}
+//         onChange={(e) => setSelectedSeller(e.target.value)}
+//       >
+//         <option value="">Select Seller</option>
+//         {sellers.map((s) => (
+//           <option key={s.id} value={s.id}>
+//             {s.name}
+//           </option>
+//         ))}
+//       </select>
+
+//       <label>Product:</label>
+//       <select
+//         className="w-full p-2 border mb-2"
+//         value={selectedProduct}
+//         onChange={(e) => setSelectedProduct(e.target.value)}
+//       >
+//         <option value="">Select Product</option>
+//         {products.map((p) => (
+//           <option key={p.id} value={p.id}>
+//             {p.name}
+//           </option>
+//         ))}
+//       </select>
+
+//       <label>Quantity:</label>
+//       <input
+//         type="number"
+//         className="w-full p-2 border mb-4"
+//         value={quantity}
+//         onChange={(e) => setQuantity(e.target.value)}
+//       />
+
+//       <button
+//         className="bg-blue-600 text-white px-4 py-2 rounded"
+//         onClick={assignProduct}
+//         disabled={!selectedSeller || !selectedProduct}
+//       >
+//         Assign
+//       </button>
+
+//       {message && <p className="mt-2 text-sm">{message}</p>}
+//     </div>
+//   );
+// }
+
+// components/ProductAssigner.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
-export default function Assignments() {
-  const [products, setProducts] = useState([]);
+export default function ProductAssigner() {
   const [sellers, setSellers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [assignments, setAssignments] = useState([]);
-
-  const [selectedProduct, setSelectedProduct] = useState("");
   const [selectedSeller, setSelectedSeller] = useState("");
-  const [quantity, setQuantity] = useState("");
-
-  const [editId, setEditId] = useState(null);
-  const [editQuantity, setEditQuantity] = useState("");
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  async function fetchAll() {
-    try {
-      setLoading(true);
-      const [pRes, sRes, aRes] = await Promise.all([
-        fetch("/api/products"),
-        fetch("/api/sellers"),
-        fetch("/api/assignments"),
-      ]);
-      const [pData, sData, aData] = await Promise.all([
-        pRes.json(),
-        sRes.json(),
-        aRes.json(),
-      ]);
-      setProducts(pData);
-      setSellers(sData);
-      setAssignments(aData);
-    } catch (e) {
-      setError(e);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [selectedProduct, setSelectedProduct] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetchAll();
+    fetch("/api/users?sellerOnly=true")
+      .then((res) => res.json())
+      .then(setSellers);
+
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then(setProducts);
+
+    fetchAssignments();
   }, []);
 
-  async function handleAssign(e) {
-    e.preventDefault();
-    if (!selectedProduct || !selectedSeller || !quantity) {
-      alert("সব ঘর পূরণ করুন");
-      return;
-    }
+  const fetchAssignments = async () => {
+    const res = await fetch("/api/assignments");
+    const data = await res.json();
+    setAssignments(data);
+  };
 
-    const product = products.find((p) => p.id === parseInt(selectedProduct));
-    if (!product || parseInt(quantity) > product.totalStock) {
-      alert("স্টক এর বেশি পরিমাণ নির্ধারণ করা যায় না");
-      return;
-    }
-
+  const assignProduct = async () => {
     const res = await fetch("/api/assignments", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        productId: parseInt(selectedProduct),
-        sellerId: parseInt(selectedSeller),
-        quantity: parseInt(quantity),
+        userId: Number(selectedSeller),
+        productId: Number(selectedProduct),
+        quantity: Number(quantity),
       }),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (res.ok) {
-      setSelectedProduct("");
-      setSelectedSeller("");
-      setQuantity("");
-      fetchAll();
+      setMessage("✅ Product assigned!");
+      fetchAssignments(); // Refresh table
     } else {
-      alert("অ্যাসাইনমেন্ট ব্যর্থ হয়েছে");
+      const data = await res.json();
+      setMessage("❌ Failed: " + data.error);
     }
-  }
-
-  async function handleDelete(id) {
-    if (!confirm("Are you sure you want to delete this assignment?")) return;
-
-    const res = await fetch(`/api/assignments/${id}`, {
-      method: "DELETE",
-    });
-
-    if (res.ok) {
-      fetchAll();
-    } else {
-      alert("Failed to delete assignment");
-    }
-  }
-
-  async function handleUpdate(id) {
-    const res = await fetch(`/api/assignments/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ newQuantity: parseInt(editQuantity) }),
-    });
-
-    if (res.ok) {
-      setEditId(null);
-      setEditQuantity("");
-      fetchAll();
-    } else {
-      alert("Failed to update quantity");
-    }
-  }
-
-  if (loading) return <div>Loading assignments...</div>;
-  if (error) return <div>Error loading assignments</div>;
+  };
 
   return (
-    <div>
-      <h2 className="text-3xl font-bold mb-6">Product Assignments to Sellers</h2>
+    <div className="p-4 max-w-3xl mx-auto bg-white rounded shadow">
+      <h2 className="text-xl font-semibold mb-4">Assign Product to Seller</h2>
 
-      <form
-        onSubmit={handleAssign}
-        className="mb-6 p-4 bg-white rounded shadow max-w-md space-y-4"
-      >
+      {/* Assignment Form */}
+      <div className="mb-6">
+        <label>Seller:</label>
         <select
-          value={selectedProduct}
-          onChange={(e) => setSelectedProduct(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        >
-          <option value="">Select Product</option>
-          {products.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name} (Stock: {p.totalStock})
-            </option>
-          ))}
-        </select>
-
-        <select
+          className="w-full p-2 border mb-2"
           value={selectedSeller}
           onChange={(e) => setSelectedSeller(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
         >
           <option value="">Select Seller</option>
           {sellers.map((s) => (
@@ -146,92 +167,67 @@ export default function Assignments() {
           ))}
         </select>
 
+        <label>Product:</label>
+        <select
+          className="w-full p-2 border mb-2"
+          value={selectedProduct}
+          onChange={(e) => setSelectedProduct(e.target.value)}
+        >
+          <option value="">Select Product</option>
+          {products.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+
+        <label>Quantity:</label>
         <input
           type="number"
-          min="1"
-          placeholder="Quantity"
+          className="w-full p-2 border mb-4"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
         />
 
         <button
-          type="submit"
-          className="bg-blue-600 text-white py-2 px-4 rounded"
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+          onClick={assignProduct}
+          disabled={!selectedSeller || !selectedProduct}
         >
           Assign
         </button>
-      </form>
 
-      <table className="w-full bg-white rounded shadow">
-        <thead>
-          <tr className="border-b">
-            <th className="p-3 text-left">Product</th>
-            <th className="p-3 text-left">Seller</th>
-            <th className="p-3 text-left">Quantity</th>
-            <th className="p-3 text-left">Actions</th>
+        {message && <p className="mt-2 text-sm">{message}</p>}
+      </div>
+
+      {/* Assignment Table */}
+      <h3 className="text-lg font-semibold mb-2">Assigned Products</h3>
+      <table className="w-full border border-gray-200 text-sm">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="p-2 border">Seller</th>
+            <th className="p-2 border">Product</th>
+            <th className="p-2 border">Total Price</th>
+            <th className="p-2 border">Quantity</th>
           </tr>
         </thead>
         <tbody>
-          {assignments.map((a) => (
-            <tr key={a.id} className="border-b hover:bg-gray-50">
-              <td className="p-3">{a.product.name}</td>
-              <td className="p-3">{a.seller.name}</td>
-              <td className="p-3">
-                {editId === a.id ? (
-                  <input
-                    type="number"
-                    value={editQuantity}
-                    onChange={(e) => setEditQuantity(e.target.value)}
-                    className="border p-1 rounded w-20"
-                    min={1}
-                  />
-                ) : (
-                  a.quantity
-                )}
-              </td>
-              <td className="p-3 space-x-2">
-                {editId === a.id ? (
-                  <>
-                    <button
-                      onClick={() => handleUpdate(a.id)}
-                      className="px-2 py-1 bg-green-600 text-white rounded text-sm"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditId(null);
-                        setEditQuantity("");
-                      }}
-                      className="px-2 py-1 border rounded text-sm"
-                    >
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => {
-                        setEditId(a.id);
-                        setEditQuantity(a.quantity);
-                      }}
-                      className="px-2 py-1 bg-yellow-500 text-white rounded text-sm"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(a.id)}
-                      className="px-2 py-1 bg-red-600 text-white rounded text-sm"
-                    >
-                      Delete
-                    </button>
-                  </>
-                )}
+          {assignments.length > 0 ? (
+            assignments.map((a) => (
+              <tr key={a.id}>
+                <td className="p-2 border">{a.user?.name || a.userId}</td>
+                <td className="p-2 border">{a.product?.name || a.productId}</td>
+                <td className="p-2 border">৳{a.product?.price * a.quantity}</td>
+                <td className="p-2 border">{a.quantity}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td className="p-2 border text-center" colSpan={3}>
+                No assignments yet.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>
