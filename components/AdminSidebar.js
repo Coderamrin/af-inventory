@@ -4,7 +4,7 @@ import LogoutButton from "./LogOut";
 
 export default function AdminSidebar({ pathname }) {
   const navItems = [
-    { href: "/", label: "🏠 Dashboard" },
+    { href: "/admin", label: "🏠 Dashboard" },
     { href: "/admin/products", label: "📦 Products" },
     { href: "/admin/sellers", label: "🧑‍💼 Sellers" },
     { href: "/admin/assignments", label: "📊 Assignments" },

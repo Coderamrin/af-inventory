@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [productData, setProductData] = useState([]);
   const [sellerData, setSellerData] = useState([]);
+  const [stockData, setStockData] = useState([]);
 
   useEffect(() => {
     async function fetchStats() {
@@ -65,6 +66,12 @@ export default function Dashboard() {
         Owed: Math.max((s.totalAssignedValue || 0) - (s.totalPaid || 0), 0),
       }));
 
+      const stockChart = products.map((p) => ({
+        name: p.name,
+        Stock: p.totalStock,
+      }));
+
+      setStockData(stockChart);
       setProductData(productChart);
       setSellerData(sellerChart);
       setStats({
@@ -93,7 +100,7 @@ export default function Dashboard() {
       <h2 className="text-3xl font-bold mb-2 text-gray-800">📊 Dashboard</h2>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
         <div className="bg-indigo-100 p-5 rounded-xl shadow">
           <h3 className="text-lg font-semibold">Total Products</h3>
           <p className="text-3xl font-bold">{stats.totalProducts}</p>
@@ -108,11 +115,15 @@ export default function Dashboard() {
         </div>
         <div className="bg-green-100 p-5 rounded-xl shadow">
           <h3 className="text-lg font-semibold">Total Paid</h3>
-          <p className="text-3xl font-bold">৳{stats.totalPaidMoney.toFixed(2)}</p>
+          <p className="text-3xl font-bold">
+            ৳{stats.totalPaidMoney.toFixed(2)}
+          </p>
         </div>
         <div className="bg-red-100 p-5 rounded-xl shadow">
           <h3 className="text-lg font-semibold">Total Owed</h3>
-          <p className="text-3xl font-bold">৳{stats.totalOwedMoney.toFixed(2)}</p>
+          <p className="text-3xl font-bold">
+            ৳{stats.totalOwedMoney.toFixed(2)}
+          </p>
         </div>
       </div>
 
@@ -148,6 +159,22 @@ export default function Dashboard() {
             <Legend />
             <Bar dataKey="Paid" fill="#10b981" />
             <Bar dataKey="Owed" fill="#ef4444" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Bar Chart: Product Stock Availability */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-xl font-semibold mb-4">
+          Available Stock per Product
+        </h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={stockData}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="Stock" fill="#6366f1" />
           </BarChart>
         </ResponsiveContainer>
       </div>
