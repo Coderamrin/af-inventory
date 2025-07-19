@@ -13,6 +13,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const res = await signIn("credentials", {
       email,
       password,
@@ -20,12 +21,20 @@ export default function LoginPage() {
     });
 
     if (res.ok) {
-      router.push("/dashboard"); // or wherever you want
+      // Fetch session to get user role
+      const sessionRes = await fetch("/api/auth/session");
+      const sessionData = await sessionRes.json();
+
+      if (sessionData?.user?.role === "ADMIN") {
+        router.push("/admin");
+      } else {
+        router.push("/seller");
+      }
     } else {
       setError("Invalid credentials");
     }
   };
-
+  
   return (
     <form onSubmit={handleSubmit} className="max-w-sm mx-auto mt-12 space-y-4">
       <h2 className="text-2xl font-bold">Login</h2>
