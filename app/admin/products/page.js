@@ -1,6 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -10,10 +20,11 @@ export default function Products() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [totalStock, setTotalStock] = useState("");
-  const [showForm, setShowForm] = useState(false);
 
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   async function fetchProducts() {
     try {
@@ -58,6 +69,7 @@ export default function Products() {
     if (res.ok) {
       resetForm();
       fetchProducts();
+      setDialogOpen(false);
     } else {
       alert(editMode ? "Failed to update product" : "Failed to add product");
     }
@@ -67,7 +79,6 @@ export default function Products() {
     setName("");
     setPrice("");
     setTotalStock("");
-    setShowForm(false);
     setEditMode(false);
     setEditId(null);
   }
@@ -78,7 +89,7 @@ export default function Products() {
     setName(product.name);
     setPrice(product.price);
     setTotalStock(product.totalStock);
-    setShowForm(true);
+    setDialogOpen(true);
   }
 
   async function handleDelete(id) {
@@ -99,99 +110,161 @@ export default function Products() {
   if (error) return <div>Error loading products</div>;
 
   return (
-    <div>
-      <h2 className="text-3xl font-bold mb-6">Products</h2>
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Products</h2>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button
+              onClick={() => {
+                resetForm();
+                setDialogOpen(true);
+              }}
+            >
+              {editMode ? "Edit Product" : "Add New Product"}
+            </Button>
+          </DialogTrigger>
 
-      <button
-        onClick={() => {
-          resetForm();
-          setShowForm(true);
-        }}
-        className="mb-6 px-4 py-2 bg-green-600 text-white rounded"
-      >
-        {editMode ? "Cancel Edit" : "Add New Product"}
-      </button>
+          <DialogContent className="max-w-md">
+            <form onSubmit={handleSubmit}>
+              <DialogHeader>
+                <DialogTitle>
+                  {editMode ? "Edit Product" : "Add New Product"}
+                </DialogTitle>
+              </DialogHeader>
 
-      {showForm && (
-        <form
-          onSubmit={handleSubmit}
-          className="mb-6 p-4 bg-white rounded shadow space-y-4 max-w-md"
-        >
-          <input
-            type="text"
-            placeholder="Product Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-          <input
-            type="number"
-            placeholder="Price"
-            value={price}
-            min="0"
-            step="0.01"
-            onChange={(e) => setPrice(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-          <input
-            type="number"
-            placeholder="Total Stock"
-            value={totalStock}
-            min="0"
-            onChange={(e) => setTotalStock(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-          <button
-            type="submit"
-            className="bg-blue-600 text-white py-2 px-4 rounded"
-          >
-            {editMode ? "Update Product" : "Save Product"}
-          </button>
-          <button
-            type="button"
-            onClick={resetForm}
-            className="ml-4 py-2 px-4 border rounded"
-          >
-            Cancel
-          </button>
-        </form>
+              <div className="space-y-4 py-4">
+                <Input
+                  type="text"
+                  placeholder="Product Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <Input
+                  type="number"
+                  placeholder="Price"
+                  min="0"
+                  step="0.01"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                />
+                <Input
+                  type="number"
+                  placeholder="Total Stock"
+                  min="0"
+                  value={totalStock}
+                  onChange={(e) => setTotalStock(e.target.value)}
+                />
+              </div>
+
+              <DialogFooter className="gap-2">
+                <Button type="submit">{editMode ? "Update" : "Save"}</Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    resetForm();
+                    setDialogOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {products.length === 0 ? (
+        <p className="text-sm text-gray-500">No products found.</p>
+      ) : (
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full bg-white border rounded-md text-sm">
+              <thead>
+                <tr className="bg-gray-100 text-left">
+                  <th className="p-3 border-b">Name</th>
+                  <th className="p-3 border-b">Price/Item</th>
+                  <th className="p-3 border-b">Total Price</th>
+                  <th className="p-3 border-b">Stock</th>
+                  <th className="p-3 border-b">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((p) => (
+                  <tr key={p.id} className="border-t hover:bg-gray-50">
+                    <td className="p-3">{p.name}</td>
+                    <td className="p-3">{p.price.toFixed(2)} টাকা</td>
+                    <td className="p-3">
+                      {(p.price * p.totalStock).toFixed(2)} টাকা
+                    </td>
+                    <td className="p-3">{p.totalStock}</td>
+                    <td className="p-3 space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(p)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(p.id)}
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="space-y-4 md:hidden">
+            {products.map((p) => (
+              <div
+                key={p.id}
+                className="border rounded-lg shadow-sm p-4 bg-white space-y-2 text-sm"
+              >
+                <div>
+                  <strong>Name:</strong> {p.name}
+                </div>
+                <div>
+                  <strong>Price/Item:</strong> {p.price.toFixed(2)} টাকা
+                </div>
+                <div>
+                  <strong>Total Price:</strong>{" "}
+                  {(p.price * p.totalStock).toFixed(2)} টাকা
+                </div>
+                <div>
+                  <strong>Stock:</strong> {p.totalStock}
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(p)}
+                    // className="w-full"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(p.id)}
+                    // className="w-full"
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
-
-      <table className="w-full bg-white rounded shadow">
-        <thead>
-          <tr className="border-b">
-            <th className="p-3 text-left">Name</th>
-            <th className="p-3 text-left">Price/Item</th>
-            <th className="p-3 text-left">Total Price </th>
-            <th className="p-3 text-left">Total Stock</th>
-            <th className="p-3 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((p) => (
-            <tr key={p.id} className="border-b hover:bg-gray-50">
-              <td className="p-3">{p.name}</td>
-              <td className="p-3">{p.price.toFixed(2)} টাকা</td>
-              <td className="p-3">{p.price.toFixed(2) * p.totalStock} টাকা</td>
-              <td className="p-3">{p.totalStock}</td>
-              <td className="p-3 space-x-2">
-                <button
-                  onClick={() => handleEdit(p)}
-                  className="text-blue-600 hover:underline"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(p.id)}
-                  className="text-red-600 hover:underline"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 }

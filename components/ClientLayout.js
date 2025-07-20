@@ -14,14 +14,14 @@ export default function ClientLayout({ children }) {
 
   return (
     <SessionProvider>
-      <div className="flex h-screen bg-gray-100">
+      <div className="lg:flex lg:h-screen bg-gray-100">
         {status === "authenticated" && (
           <>
             {role === "ADMIN" && <AdminSidebar pathname={pathname} />}
             {role === "SELLER" && <SellerSidebar pathname={pathname} />}
           </>
         )}
-        <main className="flex-1 p-8 overflow-auto">{children}</main>
+        <main className="flex-1 p-2 lg:p-8 overflow-auto">{children}</main>
       </div>
     </SessionProvider>
   );
