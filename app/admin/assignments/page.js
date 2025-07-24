@@ -23,6 +23,10 @@ export default function ProductAssigner() {
   const [created, setCreated] = useState("");
   const [message, setMessage] = useState("");
 
+  const [filterSeller, setFilterSeller] = useState("");
+  const [filterProduct, setFilterProduct] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
@@ -36,6 +40,17 @@ export default function ProductAssigner() {
 
     fetchAssignments();
   }, []);
+
+  const filteredAssignments = assignments.filter((a) => {
+    const matchSeller = filterSeller ? a.userId === Number(filterSeller) : true;
+    const matchProduct = filterProduct
+      ? a.productId === Number(filterProduct)
+      : true;
+    const matchDate = filterDate
+      ? new Date(a.createdAt).toISOString().startsWith(filterDate)
+      : true;
+    return matchSeller && matchProduct && matchDate;
+  });
 
   const fetchAssignments = async () => {
     const res = await fetch("/api/assignments");
@@ -155,6 +170,41 @@ export default function ProductAssigner() {
       {/* Responsive Assignments */}
       <h1 className="text-2xl font-semibold mt-4 mb-2">Assigned Products</h1>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <select
+          className="w-full p-2 border"
+          value={filterSeller}
+          onChange={(e) => setFilterSeller(e.target.value)}
+        >
+          <option value="">Filter by Seller</option>
+          {sellers.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className="w-full p-2 border"
+          value={filterProduct}
+          onChange={(e) => setFilterProduct(e.target.value)}
+        >
+          <option value="">Filter by Product</option>
+          {products.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="date"
+          className="w-full p-2 border"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+        />
+      </div>
+
       {/* Table for Desktop */}
       <div className="hidden md:block">
         <table className="w-full border border-gray-200 text-sm">
@@ -169,7 +219,7 @@ export default function ProductAssigner() {
           </thead>
           <tbody>
             {assignments.length > 0 ? (
-              assignments.map((a) => (
+              filteredAssignments.map((a) => (
                 <tr key={a.id}>
                   <td className="p-2 border">{a.user?.name || a.userId}</td>
                   <td className="p-2 border">
@@ -196,7 +246,7 @@ export default function ProductAssigner() {
       {/* Cards for Mobile */}
       <div className="md:hidden space-y-4">
         {assignments.length > 0 ? (
-          assignments.map((a) => (
+          filteredAssignments.map((a) => (
             <div key={a.id} className="border rounded p-4 shadow-sm">
               <p>
                 <strong>Seller:</strong> {a.user?.name || a.userId}
