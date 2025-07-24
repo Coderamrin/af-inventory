@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import getDate from "@/lib/getDate";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -20,6 +21,7 @@ export default function Products() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [totalStock, setTotalStock] = useState("");
+  const [created, setCreated] = useState("");
 
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -55,6 +57,7 @@ export default function Products() {
       name,
       price: parseFloat(price),
       totalStock: parseInt(totalStock),
+      createdAt: created,
     };
 
     const res = await fetch(
@@ -155,6 +158,12 @@ export default function Products() {
                   value={totalStock}
                   onChange={(e) => setTotalStock(e.target.value)}
                 />
+                <Input
+                  type="date"
+                  placeholder="Total Stock"
+                  value={created}
+                  onChange={(e) => setCreated(e.target.value)}
+                />
               </div>
 
               <DialogFooter className="gap-2">
@@ -188,6 +197,7 @@ export default function Products() {
                   <th className="p-3 border-b">Price/Item</th>
                   <th className="p-3 border-b">Total Price</th>
                   <th className="p-3 border-b">Stock</th>
+                  <th className="p-3 border-b">Created At</th>
                   <th className="p-3 border-b">Actions</th>
                 </tr>
               </thead>
@@ -200,6 +210,7 @@ export default function Products() {
                       {(p.price * p.totalStock).toFixed(2)} টাকা
                     </td>
                     <td className="p-3">{p.totalStock}</td>
+                    <td className="p-3">{getDate(p.createdAt)}</td>
                     <td className="p-3 space-x-2">
                       <Button
                         variant="outline"
@@ -239,8 +250,13 @@ export default function Products() {
                   <strong>Total Price:</strong>{" "}
                   {(p.price * p.totalStock).toFixed(2)} টাকা
                 </div>
+
                 <div>
-                  <strong>Stock:</strong> {p.totalStock}
+                  <strong>Created At:</strong> {getDate(p.createdAt)}
+                </div>
+                <div className="bg-purple-200 flex items-center gap-2 p-2 rounded-md ">
+                  <strong className="text-lg">Stock:</strong>{" "}
+                  <span className="text-lg">{p.totalStock}</span>
                 </div>
                 <div className="flex gap-2 pt-2">
                   <Button

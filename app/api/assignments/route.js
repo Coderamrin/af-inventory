@@ -90,6 +90,7 @@ export async function POST(req) {
     const userId = parseInt(body.userId, 10);
     const productId = parseInt(body.productId, 10);
     const quantity = Number(body.quantity);
+    const createdAt = new Date(body.createdAt).toISOString();
 
     if (!userId || !productId || !quantity) {
       return new Response(
@@ -130,6 +131,7 @@ export async function POST(req) {
           userId,
           productId,
           quantity,
+          createdAt,
         },
       });
     }

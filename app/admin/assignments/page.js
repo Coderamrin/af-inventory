@@ -1,6 +1,17 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import getDate from "@/lib/getDate";
 import { useState, useEffect } from "react";
+
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function ProductAssigner() {
   const [sellers, setSellers] = useState([]);
@@ -9,7 +20,10 @@ export default function ProductAssigner() {
   const [selectedSeller, setSelectedSeller] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [created, setCreated] = useState("");
   const [message, setMessage] = useState("");
+
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     fetch("/api/users?sellerOnly=true")
@@ -36,6 +50,7 @@ export default function ProductAssigner() {
         userId: Number(selectedSeller),
         productId: Number(selectedProduct),
         quantity: Number(quantity),
+        createdAt: created,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -53,59 +68,92 @@ export default function ProductAssigner() {
 
   return (
     <div className="p-4 max-w-4xl mx-auto bg-white rounded shadow">
-      <h2 className="text-xl font-semibold mb-4">Assign Product to Seller</h2>
+      {/* <h2 className="text-xl font-semibold mb-4">Assign Product to Seller</h2> */}
 
       {/* Assignment Form */}
-      <div className="mb-6">
-        <label className="block">Seller:</label>
-        <select
-          className="w-full p-2 border mb-2"
-          value={selectedSeller}
-          onChange={(e) => setSelectedSeller(e.target.value)}
-        >
-          <option value="">Select Seller</option>
-          {sellers.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
 
-        <label className="block">Product:</label>
-        <select
-          className="w-full p-2 border mb-2"
-          value={selectedProduct}
-          onChange={(e) => setSelectedProduct(e.target.value)}
-        >
-          <option value="">Select Product</option>
-          {products.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogTrigger asChild>
+          <Button onClick={() => setShowForm(true)}>Assign Product</Button>
+        </DialogTrigger>
 
-        <label className="block">Quantity:</label>
-        <input
-          type="number"
-          className="w-full p-2 border mb-4"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-        />
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Product to Seller</DialogTitle>
+          </DialogHeader>
 
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-          onClick={assignProduct}
-          disabled={!selectedSeller || !selectedProduct}
-        >
-          Assign
-        </button>
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-1">Seller:</label>
+              <select
+                className="w-full p-2 border"
+                value={selectedSeller}
+                onChange={(e) => setSelectedSeller(e.target.value)}
+              >
+                <option value="">Select Seller</option>
+                {sellers.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {message && <p className="mt-2 text-sm">{message}</p>}
-      </div>
+            <div>
+              <label className="block mb-1">Product:</label>
+              <select
+                className="w-full p-2 border"
+                value={selectedProduct}
+                onChange={(e) => setSelectedProduct(e.target.value)}
+              >
+                <option value="">Select Product</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block mb-1">Quantity:</label>
+              <input
+                type="number"
+                className="w-full p-2 border"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1">Date:</label>
+              <input
+                type="date"
+                className="w-full p-2 border"
+                value={created}
+                onChange={(e) => setCreated(e.target.value)}
+              />
+            </div>
+
+            {message && <p className="text-sm text-gray-600">{message}</p>}
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button
+              onClick={assignProduct}
+              disabled={!selectedSeller || !selectedProduct}
+            >
+              Assign
+            </Button>
+            <Button variant="outline" onClick={() => setShowForm(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Responsive Assignments */}
-      <h3 className="text-lg font-semibold mb-2">Assigned Products</h3>
+      <h1 className="text-2xl font-semibold mt-4 mb-2">Assigned Products</h1>
 
       {/* Table for Desktop */}
       <div className="hidden md:block">
@@ -115,6 +163,7 @@ export default function ProductAssigner() {
               <th className="p-2 border">Seller</th>
               <th className="p-2 border">Product</th>
               <th className="p-2 border">Total Price</th>
+              <th className="p-2 border">Created</th>
               <th className="p-2 border">Quantity</th>
             </tr>
           </thead>
@@ -123,8 +172,13 @@ export default function ProductAssigner() {
               assignments.map((a) => (
                 <tr key={a.id}>
                   <td className="p-2 border">{a.user?.name || a.userId}</td>
-                  <td className="p-2 border">{a.product?.name || a.productId}</td>
-                  <td className="p-2 border">৳{(a.product?.price * a.quantity).toFixed(2)}</td>
+                  <td className="p-2 border">
+                    {a.product?.name || a.productId}
+                  </td>
+                  <td className="p-2 border">
+                    ৳{(a.product?.price * a.quantity).toFixed(2)}
+                  </td>
+                  <td className="p-2 border">{getDate(a.createdAt)}</td>
                   <td className="p-2 border">{a.quantity}</td>
                 </tr>
               ))
@@ -153,6 +207,9 @@ export default function ProductAssigner() {
               <p>
                 <strong>Total Price:</strong> ৳
                 {(a.product?.price * a.quantity).toFixed(2)}
+              </p>
+              <p>
+                <strong>Created At:</strong> {getDate(a.createdAt)}
               </p>
               <p>
                 <strong>Quantity:</strong> {a.quantity}

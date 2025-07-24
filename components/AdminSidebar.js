@@ -45,7 +45,7 @@ export default function AdminSidebar() {
   return (
     <div>
       {/* Mobile: Hamburger button */}
-      <div className="md:hidden p-4">
+      <div className="lg:hidden p-4">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon">
@@ -59,7 +59,7 @@ export default function AdminSidebar() {
       </div>
 
       {/* Desktop: Sidebar always visible */}
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <SidebarContent />
       </div>
     </div>
