@@ -1,5 +1,6 @@
 "use client";
 
+import getDate from "@/lib/getDate";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
 
@@ -14,7 +15,8 @@ export default function SellerDashboard() {
     fetcher
   );
 
-  if (!session || !assignments || !payments) return <p className="p-6">Loading...</p>;
+  if (!session || !assignments || !payments)
+    return <p className="p-6">Loading...</p>;
 
   const sellerEmail = session.user?.email;
 
@@ -26,9 +28,10 @@ export default function SellerDashboard() {
 
   const totalAssigned = sellerAssignments.length;
   const totalPaidMoney = sellerPayments.reduce((sum, p) => sum + p.amount, 0);
-  const totalOwedMoney = sellerAssignments.reduce((sum, a) => {
-    return sum + a.quantity * a.product.price;
-  }, 0) - totalPaidMoney;
+  const totalOwedMoney =
+    sellerAssignments.reduce((sum, a) => {
+      return sum + a.quantity * a.product.price;
+    }, 0) - totalPaidMoney;
 
   return (
     <div className="p-4 md:p-6">
@@ -58,6 +61,7 @@ export default function SellerDashboard() {
                 <th className="p-2 border text-left">Product</th>
                 <th className="p-2 border text-left">Quantity</th>
                 <th className="p-2 border text-left">Total Price</th>
+                <th className="p-2 border text-left">Assignment Date</th>
               </tr>
             </thead>
             <tbody>
@@ -70,6 +74,9 @@ export default function SellerDashboard() {
                     <td className="p-2 border">{assignment.product.name}</td>
                     <td className="p-2 border">{assignment.quantity}</td>
                     <td className="p-2 border">৳{totalPrice.toFixed(2)}</td>
+                    <td className="p-2 border">
+                      {getDate(assignment.createdAt)}
+                    </td>
                   </tr>
                 );
               })}

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, PenBoxIcon } from "lucide-react";
 import LogoutButton from "./LogOut";
 
 export default function AdminSidebar() {
@@ -18,6 +18,7 @@ export default function AdminSidebar() {
     { href: "/admin/products", label: "📦 Products" },
     { href: "/admin/sellers", label: "🧑‍💼 Sellers" },
     { href: "/admin/assignments", label: "📊 Assignments" },
+    { href: "/admin/update-password", label: " Update Password" },
   ];
 
   const SidebarContent = () => (
