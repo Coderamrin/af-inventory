@@ -65,7 +65,6 @@ export default function ProductAssigner() {
         userId: Number(selectedSeller),
         productId: Number(selectedProduct),
         quantity: Number(quantity),
-        createdAt: created,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -137,16 +136,6 @@ export default function ProductAssigner() {
                 className="w-full p-2 border"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1">Date:</label>
-              <input
-                type="date"
-                className="w-full p-2 border"
-                value={created}
-                onChange={(e) => setCreated(e.target.value)}
               />
             </div>
 
@@ -228,7 +217,7 @@ export default function ProductAssigner() {
                   <td className="p-2 border">
                     ৳{(a.product?.price * a.quantity).toFixed(2)}
                   </td>
-                  <td className="p-2 border">{getDate(a.createdAt)}</td>
+                  <td className="p-2 border">{getDate(a.updatedAt)}</td> 
                   <td className="p-2 border">{a.quantity}</td>
                 </tr>
               ))
