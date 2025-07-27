@@ -21,7 +21,6 @@ export default function Products() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [totalStock, setTotalStock] = useState("");
-  const [created, setCreated] = useState("");
 
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -57,7 +56,6 @@ export default function Products() {
       name,
       price: parseFloat(price),
       totalStock: parseInt(totalStock),
-      createdAt: created,
     };
 
     const res = await fetch(
@@ -157,12 +155,6 @@ export default function Products() {
                   min="0"
                   value={totalStock}
                   onChange={(e) => setTotalStock(e.target.value)}
-                />
-                <Input
-                  type="date"
-                  placeholder="Total Stock"
-                  value={created}
-                  onChange={(e) => setCreated(e.target.value)}
                 />
               </div>
 

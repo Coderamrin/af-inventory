@@ -217,7 +217,7 @@ export default function ProductAssigner() {
                   <td className="p-2 border">
                     ৳{(a.product?.price * a.quantity).toFixed(2)}
                   </td>
-                  <td className="p-2 border">{getDate(a.updatedAt)}</td> 
+                  <td className="p-2 border">{getDate(a.createdAt)}</td> 
                   <td className="p-2 border">{a.quantity}</td>
                 </tr>
               ))
