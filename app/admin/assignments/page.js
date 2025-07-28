@@ -73,6 +73,7 @@ export default function ProductAssigner() {
 
     if (res.ok) {
       setMessage("✅ Product assigned!");
+      setShowForm(false);
       fetchAssignments(); // Refresh table
     } else {
       const data = await res.json();
@@ -217,7 +218,7 @@ export default function ProductAssigner() {
                   <td className="p-2 border">
                     ৳{(a.product?.price * a.quantity).toFixed(2)}
                   </td>
-                  <td className="p-2 border">{getDate(a.createdAt)}</td> 
+                  <td className="p-2 border">{getDate(a.createdAt)}</td>
                   <td className="p-2 border">{a.quantity}</td>
                 </tr>
               ))
