@@ -52,6 +52,15 @@ export default function ProductAssigner() {
     return matchSeller && matchProduct && matchDate;
   });
 
+  const totalQuantity = filteredAssignments.reduce(
+    (sum, a) => sum + a.quantity,
+    0
+  );
+  const totalPrice = filteredAssignments.reduce(
+    (sum, a) => sum + (a.product?.price || 0) * a.quantity,
+    0
+  );
+
   const fetchAssignments = async () => {
     const res = await fetch("/api/assignments");
     const data = await res.json();
@@ -259,6 +268,17 @@ export default function ProductAssigner() {
         ) : (
           <p className="text-gray-500">No assignments yet.</p>
         )}
+      </div>
+
+      <div className="mt-6 p-4 border-t bg-gray-50 rounded-md shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm font-medium">
+        <div className="mb-2 sm:mb-0">
+          <p className="text-gray-700">Total Quantity:</p>
+          <p className="text-lg text-blue-600">{totalQuantity}</p>
+        </div>
+        <div>
+          <p className="text-gray-700">Total Price:</p>
+          <p className="text-lg text-green-600">৳{totalPrice.toFixed(2)}</p>
+        </div>
       </div>
     </div>
   );
