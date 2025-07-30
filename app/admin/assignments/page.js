@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import getDate from "@/lib/getDate";
 import { useState, useEffect } from "react";
-
 import {
   Dialog,
   DialogTrigger,
@@ -20,12 +19,14 @@ export default function ProductAssigner() {
   const [selectedSeller, setSelectedSeller] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [created, setCreated] = useState("");
   const [message, setMessage] = useState("");
 
   const [filterSeller, setFilterSeller] = useState("");
   const [filterProduct, setFilterProduct] = useState("");
   const [filterDate, setFilterDate] = useState("");
+
+  const [editingAssignment, setEditingAssignment] = useState();
+  const [edit, setEdit] = useState(false);
 
   const [showForm, setShowForm] = useState(false);
 
@@ -90,12 +91,60 @@ export default function ProductAssigner() {
     }
   };
 
+  const deleteAssignment = async (id) => {
+    if (!confirm("Are you sure you want to delete this assignment?")) return;
+
+    const res = await fetch(`/api/assignments/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      confirm("Assignment deleted successfully!");
+      fetchAssignments();
+    } else {
+      alert("Failed to delete assignment");
+    }
+  };
+
+  const startEdit = (data) => {
+    if (data) {
+      setSelectedSeller(data.userId);
+      setSelectedProduct(data.productId);
+      setQuantity(data.quantity);
+      setEditingAssignment(data);
+    }
+
+    setEdit(true);
+  };
+
+  const updateAssignment = async () => {
+    const res = await fetch(`/api/assignments/${editingAssignment.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: Number(editingAssignment.id),
+        userId: Number(selectedSeller),
+        productId: Number(selectedProduct),
+        quantity: Number(quantity),
+      }),
+    });
+
+    if (res.ok) {
+      // Refresh your data here (e.g., re-fetch assignments)
+      confirm("Assignment Updated successfully!");
+      fetchAssignments();
+      setEditingAssignment(null);
+      setEdit(false);
+    } else {
+      console.log(res);
+      alert("Failed to update assignment");
+    }
+  };
+
   return (
     <div className="p-4 max-w-4xl mx-auto bg-white rounded shadow">
       {/* <h2 className="text-xl font-semibold mb-4">Assign Product to Seller</h2> */}
 
       {/* Assignment Form */}
-
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogTrigger asChild>
           <Button onClick={() => setShowForm(true)}>Assign Product</Button>
@@ -166,6 +215,66 @@ export default function ProductAssigner() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={edit} onOpenChange={() => setEdit(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Assignment</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-1">Seller:</label>
+              <select
+                className="w-full p-2 border"
+                value={selectedSeller}
+                onChange={(e) => setSelectedSeller(e.target.value)}
+              >
+                <option value="">Select Seller</option>
+                {sellers.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block mb-1">Product:</label>
+              <select
+                className="w-full p-2 border"
+                value={selectedProduct}
+                onChange={(e) => setSelectedProduct(e.target.value)}
+              >
+                <option value="">Select Product</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <label className="block">Quantity:</label>
+            <input
+              type="number"
+              className="w-full border p-2"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button onClick={updateAssignment}>Save</Button>
+            <Button
+              variant="outline"
+              onClick={() => setEditingAssignment(null)}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Responsive Assignments */}
       <h1 className="text-2xl font-semibold mt-4 mb-2">Assigned Products</h1>
 
@@ -214,6 +323,7 @@ export default function ProductAssigner() {
               <th className="p-2 border">Total Price</th>
               <th className="p-2 border">Created</th>
               <th className="p-2 border">Quantity</th>
+              <th className="p-2 border">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -229,6 +339,26 @@ export default function ProductAssigner() {
                   </td>
                   <td className="p-2 border">{getDate(a.createdAt)}</td>
                   <td className="p-2 border">{a.quantity}</td>
+                  <td className="p-2 border">
+                    {" "}
+                    <div>
+                      <Button
+                        size="sm"
+                        onClick={() => startEdit(a)}
+                        className="mt-2 mr-2"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => deleteAssignment(a.id)}
+                        className="mt-2"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </td>
                 </tr>
               ))
             ) : (
@@ -263,6 +393,24 @@ export default function ProductAssigner() {
               <p>
                 <strong>Quantity:</strong> {a.quantity}
               </p>
+
+              <div>
+                <Button
+                  size="sm"
+                  onClick={() => startEdit(a)}
+                  className="mt-2 mr-2"
+                >
+                  Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => deleteAssignment(a.id)}
+                  className="mt-2"
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
           ))
         ) : (

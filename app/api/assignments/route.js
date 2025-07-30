@@ -1,29 +1,3 @@
-// import prisma from "@/utils/prismaDB";
-
-// export async function GET() {
-//   try {
-//     const assignments = await prisma.productAssignment.findMany({
-//       include: {
-//         product: true,
-//         user: true, // assuming user model has role = SELLER
-//       },
-//     });
-
-//     return new Response(JSON.stringify(assignments), {
-//       status: 200,
-//       headers: { "Content-Type": "application/json" },
-//     });
-//   } catch (error) {
-//     console.error("GET /api/assignments error:", error);
-//     return new Response(
-//       JSON.stringify({ error: "Failed to fetch assignments" }),
-//       {
-//         status: 500,
-//       }
-//     );
-//   }
-// }
-
 import prisma from "@/utils/prismaDB";
 
 export async function GET() {
@@ -60,6 +34,18 @@ export async function POST(req) {
     if (!userId || !productId || !quantity) {
       return new Response(
         JSON.stringify({ error: "Missing or invalid fields" }),
+        { status: 400 }
+      );
+    }
+
+    // Fetch product and validate stock
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product || product.totalStock < quantity) {
+      return new Response(
+        JSON.stringify({ error: "Not enough stock available" }),
         { status: 400 }
       );
     }
